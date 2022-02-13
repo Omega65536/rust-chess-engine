@@ -52,9 +52,24 @@ fn search(depth_left: u16, mut alpha: i16, beta: i16, board: &Board, search_ctx:
     if search_ctx.should_stop() {
         return 0;
     }
-    if depth_left == 0  {
+    if depth_left <= 0  {
         return quiesence(alpha, beta, board, search_ctx);
     }
+
+    // Null move pruning
+    // const R: u16 = 2;
+    // if depth_left > R {
+    //     let temp_board_opt = board.null_move();
+    //     match temp_board_opt {
+    //         Some(temp_board) => {
+    //             let value = -search(depth_left - R - 1, -beta, -beta + 1, &temp_board, search_ctx);
+    //             if  value >= beta {
+    //                 return value;
+    //             }
+    //         },
+    //         None => (), 
+    //     }
+    // }
 
     let move_iter = MoveGen::new_legal(&board);
     for chess_move in move_iter {
@@ -76,6 +91,12 @@ pub fn quiesence(mut alpha: i16, beta: i16, board: &Board, search_ctx: &mut Sear
     if stand_pat >= beta {
         return beta;
     }
+
+    // Delta pruning
+    // const BIG_DELTA: i16 = 975;
+    // if stand_pat < alpha - BIG_DELTA {
+    //     return alpha;
+    // }
     alpha = cmp::max(alpha, stand_pat);
     
     let mut move_iter = MoveGen::new_legal(&board);

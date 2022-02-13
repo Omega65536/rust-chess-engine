@@ -16,6 +16,7 @@ impl SearchContext {
     }
 
     pub fn should_stop(&self) -> bool {
+        self.num_nodes % 1024 == 0 && 
         self.start_time.elapsed() >= self.max_time
     }
 

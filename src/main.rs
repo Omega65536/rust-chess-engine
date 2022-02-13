@@ -22,7 +22,7 @@ fn test() {
     ];
     for fen in fens {
         let board = Board::from_str(fen).expect("Invalid FEN");
-        search::iterative_deepening(Duration::from_millis(3_000), &board);
+        search::iterative_deepening(Duration::from_millis(500), &board);
         println!();
     }
 }
