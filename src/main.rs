@@ -30,16 +30,18 @@ fn test() {
 }
 
 fn vs() {
-    let mut board = Board::default();
+    let mut board = Board::from_str("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR w Kkq - 0 1").unwrap();
 
     while board.status() == BoardStatus::Ongoing {
+        let engine_move = search::iterative_deepening(Duration::from_millis(5_000), &mut board);
+        board = Board::make_move_new(&board, engine_move);
+        util::print_board(&board);
+
         let user_move = get_user_move(&board);
         board = Board::make_move_new(&board, user_move);
         util::print_board(&board);
 
-        let engine_move = search::iterative_deepening(Duration::from_millis(100), &mut board);
-        board = Board::make_move_new(&board, engine_move);
-        util::print_board(&board);
+        
     }
 }
 
