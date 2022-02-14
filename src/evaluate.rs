@@ -1,6 +1,12 @@
-use chess::{Board, Piece, Color, Square, Rank, File};
+use chess::{Board, Piece, Color, Square};
 
 use crate::search_context::SearchContext;
+
+const PAWN_VALUE: i16 = 100;
+const KNIGHT_VALUE: i16 = 310;
+const BISHOP_VALUE: i16 = 330;
+const ROOK_VALUE: i16 = 520;
+const QUEEN_VALUE: i16 = 950;
 
 type Psqt = [i16; 64];
 
@@ -48,51 +54,45 @@ const KING_MG: Psqt = [
     0,    0,     0,     0,    0,    0,    0,    0,
 ];
 
-pub fn eval_board(board: &Board, search_ctx: &mut SearchContext) -> i16 {
+pub fn eval_board(board: &mut Board, search_ctx: &mut SearchContext) -> i16 {
     search_ctx.inc_nodes();
     let my_color = board.side_to_move();
     let mut value = 0;
-    for x in 0..8 {
-        for y in 0..8 {
-            let square = Square::make_square(
-                Rank::from_index(y),
-                File::from_index(x));
-            match board.color_on(square) {
-                Some(color) => {
-                    let piece = board.piece_on(square).unwrap();
-                    if color == Color::White {
-                        value += eval_white_piece(piece, square);
-                    }
-                    else {
-                        value -= eval_black_piece(piece, square);
-                    }
+    for square in board.combined().into_iter() {
+        match board.color_on(square) {
+            Some(color) => {
+                let piece = board.piece_on(square).unwrap();
+                if color == Color::White {
+                    value += eval_white_piece(piece, square);
                 }
-                None => {},
+                else {
+                    value -= eval_black_piece(piece, square);
+                }
             }
+            None => {},
         }
     }
-    //println!("Board: {} Value: {}", board, value);
     return if my_color == Color::White { value } else { -value };
 }
 
 fn eval_white_piece(piece: Piece, square: Square) -> i16 {
     match piece {
-        Piece::Pawn =>   100 + PAWN_MG[square.to_index()],
-        Piece::Knight => 310 + KNIGHT_MG[square.to_index()],
-        Piece::Bishop => 330 + BISHOP_MG[square.to_index()],
-        Piece::Rook =>   520,
-        Piece::Queen =>  950,
-        Piece::King => 10000 + KING_MG[square.to_index()],
+        Piece::Pawn =>   PAWN_VALUE   + PAWN_MG[square.to_index()],
+        Piece::Knight => KNIGHT_VALUE + KNIGHT_MG[square.to_index()],
+        Piece::Bishop => BISHOP_VALUE + BISHOP_MG[square.to_index()],
+        Piece::Rook =>   ROOK_VALUE,
+        Piece::Queen =>  QUEEN_VALUE,
+        Piece::King =>                  KING_MG[square.to_index()],
     }
 }
 
 fn eval_black_piece(piece: Piece, square: Square) -> i16 {
     match piece {
-        Piece::Pawn =>   100 + PAWN_MG[63 - square.to_index()],
-        Piece::Knight => 310 + KNIGHT_MG[63 - square.to_index()],
-        Piece::Bishop => 330 + BISHOP_MG[63 - square.to_index()],
-        Piece::Rook =>   520,
-        Piece::Queen =>  950,
-        Piece::King => 10000 + KING_MG[63 - square.to_index()],
+        Piece::Pawn =>   PAWN_VALUE   + PAWN_MG[63 - square.to_index()],
+        Piece::Knight => KNIGHT_VALUE + KNIGHT_MG[63 - square.to_index()],
+        Piece::Bishop => BISHOP_VALUE + BISHOP_MG[63 - square.to_index()],
+        Piece::Rook =>   ROOK_VALUE,
+        Piece::Queen =>  QUEEN_VALUE,
+        Piece::King =>                  KING_MG[63 - square.to_index()],
     }
 }

@@ -4,6 +4,7 @@ pub struct SearchContext {
     start_time: Instant,
     max_time: Duration,
     num_nodes: u64,
+    debug_output: bool,
 }
 
 impl SearchContext {
@@ -12,6 +13,7 @@ impl SearchContext {
             start_time: Instant::now(),
             max_time: max_time,
             num_nodes: 0,
+            debug_output: true,
         }
     }
 
