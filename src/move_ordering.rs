@@ -1,4 +1,6 @@
-use chess::{ChessMove, MoveGen, Board, EMPTY};
+use chess::{ChessMove, MoveGen, Board, Piece, EMPTY};
+
+use crate::search_context::SearchContext;
 
 // const MVV_LVA: [[i16; 6]; 6] = [
 //     //K   Q   R   B   N   P
@@ -10,14 +12,48 @@ use chess::{ChessMove, MoveGen, Board, EMPTY};
 //     [10, 11, 12, 13, 14, 15], // P
 // ];
 
-pub fn get_moves(board: &Board) -> Vec<ChessMove> {
+#[inline]
+pub fn get_moves(board: &Board, search_ctx: &SearchContext) -> Vec<ChessMove> {
     let mut move_iter = MoveGen::new_legal(&board);
     let num_moves = move_iter.len();
     let mut moves: Vec<ChessMove> = Vec::with_capacity(num_moves);
 
-    let targets = board.color_combined(!board.side_to_move());
-    move_iter.set_iterator_mask(*targets);
+    match search_ctx.get_last_pv_move() {
+        Some(last_pv_move) => {
+            if board.legal(last_pv_move) {
+                moves.push(last_pv_move);
+                move_iter.remove_move(last_pv_move);
+            }
+        },
+        None => (),
+    }
 
+    let targets = board.pieces(Piece::Queen);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Rook);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Bishop);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Knight);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Pawn);
+    move_iter.set_iterator_mask(*targets);
     for chess_move in &mut move_iter {
         moves.push(chess_move);
     }
@@ -46,4 +82,43 @@ pub fn get_moves(board: &Board) -> Vec<ChessMove> {
     //         }
     //     }
     // }
+}
+
+#[inline]
+pub fn get_captures(board: &Board, search_ctx: &SearchContext) -> Vec<ChessMove> {
+    let mut move_iter = MoveGen::new_legal(&board);
+    let num_moves = move_iter.len();
+    let mut moves: Vec<ChessMove> = Vec::with_capacity(num_moves);
+
+    let targets = board.pieces(Piece::Queen);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Rook);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Bishop);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Knight);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    let targets = board.pieces(Piece::Pawn);
+    move_iter.set_iterator_mask(*targets);
+    for chess_move in &mut move_iter {
+        moves.push(chess_move);
+    }
+
+    return moves;
 }

@@ -1,6 +1,9 @@
-use chess::{Board, Piece, Color, Square};
+use chess::{Board, Piece, Color, Square, BoardStatus};
 
 use crate::search_context::SearchContext;
+
+const CHECKMATE_VALUE: i16 = 20_000;
+const DRAW_VALUE: i16 = 0;
 
 const PAWN_VALUE: i16 = 100;
 const KNIGHT_VALUE: i16 = 310;
@@ -12,9 +15,9 @@ type Psqt = [i16; 64];
 
 const PAWN_MG: Psqt = [
     0,    0,     0,     0,    0,    0,    0,    0,
-    5,    5,     5,   -40,  -40,    5,    5,    5,
-    0,    0,   -10,     0,    0,  -10,    0,    0,
-    0,    0,    20,    30,   30,   20,    0,    0,
+    5,    5,   -20,   -40,  -40,    5,    5,    5,
+    0,    0,     0,     0,    0,  -20,    0,    0,
+    0,    0,    20,    30,   30,  -20,    0,    0,
     0,    0,     0,    50,   50,    0,    0,    0,
    50,   50,    50,    70,   70,   60,   50,   50,
   100,  100,   100,   100,  100,  100,  100,  100,
@@ -54,12 +57,20 @@ const KING_MG: Psqt = [
     0,    0,     0,     0,    0,    0,    0,    0,
 ];
 
+#[inline]
 pub fn eval_board(board: &mut Board, search_ctx: &mut SearchContext) -> i16 {
     search_ctx.inc_nodes();
+
+    match board.status() {
+        BoardStatus::Checkmate => return CHECKMATE_VALUE,
+        BoardStatus::Stalemate => return DRAW_VALUE,
+        BoardStatus::Ongoing => (),
+    }
+
     let mut value = 0;
 
     let white_pieces = board.color_combined(Color::White);
-    let black_pieces = board.color_combined(Color::Black);
+    let black_pieces = board.color_combined(Color::Black).reverse_colors();
     let white_king = board.king_square(Color::White);
     let black_king = board.king_square(Color::Black);
 
@@ -87,19 +98,19 @@ pub fn eval_board(board: &mut Board, search_ctx: &mut SearchContext) -> i16 {
     value += KING_MG[white_king.to_index()];
     
 
-    for square in black_pieces & pawns {
-        value -= PAWN_VALUE   + PAWN_MG[63 - square.to_index()];
+    for square in black_pieces & pawns.reverse_colors() {
+        value -= PAWN_VALUE   + PAWN_MG[square.to_index()];
     }
-    for square in black_pieces & knights {
-        value -= KNIGHT_VALUE + KNIGHT_MG[63 - square.to_index()];
+    for square in black_pieces & knights.reverse_colors() {
+        value -= KNIGHT_VALUE + KNIGHT_MG[square.to_index()];
     }
-    for square in black_pieces & bishops {
-        value -= BISHOP_VALUE + BISHOP_MG[63 - square.to_index()];
+    for square in black_pieces & bishops.reverse_colors() {
+        value -= BISHOP_VALUE + BISHOP_MG[square.to_index()];
     }
-    for square in black_pieces & rooks {
+    for square in black_pieces & rooks.reverse_colors() {
         value -= ROOK_VALUE   ;//+ ROOK_MG[63 - square.to_index()];
     }
-    for square in black_pieces & queens {
+    for square in black_pieces & queens.reverse_colors() {
         value -= QUEEN_VALUE  ;//+ QUEEN_MG[63 - square.to_index()];
     }
     value -= KING_MG[63 - black_king.to_index()];

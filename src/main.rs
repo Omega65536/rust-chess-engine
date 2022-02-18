@@ -1,9 +1,10 @@
 use chess::{Board, BoardStatus, ChessMove};
-use std::io;
+use std::io::{self};
 use std::str::FromStr;
 use std::time::Duration;
 
 mod util;
+mod uci;
 mod search_context;
 mod search;
 mod evaluate;
@@ -30,7 +31,8 @@ fn test() {
 }
 
 fn vs() {
-    let mut board = Board::from_str("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR w Kkq - 0 1").unwrap();
+    let mut board = Board::default();
+    //let mut board = Board::from_str("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1NBQKBNR w Kkq - 0 1").unwrap();
 
     while board.status() == BoardStatus::Ongoing {
         let engine_move = search::iterative_deepening(Duration::from_millis(5_000), &mut board);
@@ -39,9 +41,7 @@ fn vs() {
 
         let user_move = get_user_move(&board);
         board = Board::make_move_new(&board, user_move);
-        util::print_board(&board);
-
-        
+        util::print_board(&board); 
     }
 }
 
